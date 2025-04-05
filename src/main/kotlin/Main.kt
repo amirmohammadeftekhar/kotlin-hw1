@@ -106,6 +106,8 @@ fun main() {
             Menu:
             1.Fetch user info by username
             2.Show cached users
+            3.Search user by username in cache
+            4.Search repository name in cache
             5.Exit
             ------------------------------
             Enter your choice:
