@@ -90,6 +90,7 @@ class GitHubRepository(private val apiService: GitHubApiService) {
     fun getCachedUsers(): List<GitHubUser> = userCache.values.toList()
 }
 
+// CLI Main Program
 fun main() {
     val retrofit = Retrofit.Builder()
         .baseUrl("https://api.github.com/")
@@ -113,30 +114,52 @@ fun main() {
             Enter your choice:
         """.trimIndent())
 
+
         when (scanner.nextLine().trim()) {
             "1" -> {
                 print("Enter GitHub username: ")
                 val username = scanner.nextLine().trim()
                 val user = repository.getUserInfo(username)
-                // Basic display implementation
+                if (user != null) {
+                    println("\nUsername: ${user.login}")
+                    println("Followers: ${user.followers}")
+                    println("Following: ${user.following}")
+                    println("Created At: ${user.createdAt}")
+                    println("Repositories:")
+                    if (user.repos.isEmpty()) println("No repositories found.")
+                    else user.repos.forEach { println("- ${it.name}") }
+                }
             }
             "2" -> {
                 val users = repository.getCachedUsers()
-                users.forEach { println("- ${it.login}") }
+                if (users.isEmpty()) {
+                    println("No users cached.")
+                } else {
+                    println("Cached Users:")
+                    users.forEach { println("- ${it.login}") }
+                }
             }
             "3" -> {
                 print("Enter search query: ")
                 val query = scanner.nextLine().trim()
-                repository.searchUserByUsername(query).forEach { println("- ${it.login}") }
+                val results = repository.searchUserByUsername(query)
+                if (results.isEmpty()) println("No users found.")
+                else results.forEach { println("- ${it.login}") }
             }
             "4" -> {
                 print("Enter repository name to search: ")
                 val query = scanner.nextLine().trim()
-                repository.searchRepoByName(query).forEach { (user, repo) ->
+                val results = repository.searchRepoByName(query)
+                if (results.isEmpty()) println("No matching repositories found.")
+                else results.forEach { (user, repo) ->
                     println("User: ${user.login} -> Repo: ${repo.name}")
                 }
             }
-            "5" -> break
+            "5" -> {
+                println("Exiting program. Goodbye!")
+                break
+            }
+            else -> println("Invalid option. Try again.")
         }
     }
 }
