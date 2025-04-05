@@ -64,3 +64,40 @@ class GitHubRepository(private val apiService: GitHubApiService) {
 
     fun getCachedUsers(): List<GitHubUser> = userCache.values.toList()
 }
+
+fun main() {
+    val retrofit = Retrofit.Builder()
+        .baseUrl("https://api.github.com/")
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+
+    val apiService = retrofit.create(GitHubApiService::class.java)
+    val repository = GitHubRepository(apiService)
+    val scanner = Scanner(System.`in`)
+
+    while (true) {
+        println("""
+            ------------------------------
+            Menu:
+            1.Fetch user info by username
+            2.Show cached users
+            5.Exit
+            ------------------------------
+            Enter your choice:
+        """.trimIndent())
+
+        when (scanner.nextLine().trim()) {
+            "1" -> {
+                print("Enter GitHub username: ")
+                val username = scanner.nextLine().trim()
+                val user = repository.getUserInfo(username)
+                // Basic display implementation
+            }
+            "2" -> {
+                val users = repository.getCachedUsers()
+                users.forEach { println("- ${it.login}") }
+            }
+            "5" -> break
+        }
+    }
+}
