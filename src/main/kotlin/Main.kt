@@ -48,12 +48,22 @@ class GitHubRepository(private val apiService: GitHubApiService) {
             return userCache[username]
         }
 
-        // Basic API implementation (without error handling)
         val userResponse = apiService.getUser(username).execute()
-        val userData = userResponse.body()!!
+        if (!userResponse.isSuccessful) {
+            println("Error fetching user info: ${userResponse.code()}")
+            return null
+        }
+        val userData = userResponse.body() ?: run {
+            println("No user data found.")
+            return null
+        }
 
         val reposResponse = apiService.getUserRepos(username).execute()
-        val reposData = reposResponse.body()!!
+        if (!reposResponse.isSuccessful) {
+            println("Error fetching repositories: ${reposResponse.code()}")
+            return null
+        }
+        val reposData = reposResponse.body() ?: listOf()
 
         val gitHubUser = GitHubUser(
             login = userData.login,
