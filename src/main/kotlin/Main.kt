@@ -12,3 +12,12 @@ data class UserResponse(
 data class Repository(
     val name: String
 )
+
+// Combined user data with their public repositories
+data class GitHubUser(
+    val login: String,
+    val followers: Int,
+    val following: Int,
+    val createdAt: String,
+    val repos: List<Repository>
+)
