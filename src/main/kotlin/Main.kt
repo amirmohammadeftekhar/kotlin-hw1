@@ -34,3 +34,33 @@ interface GitHubApiService {
     @GET("users/{username}/repos")
     fun getUserRepos(@Path("username") username: String): Call<List<Repository>>
 }
+
+class GitHubRepository(private val apiService: GitHubApiService) {
+    private val userCache = mutableMapOf<String, GitHubUser>()
+
+    fun getUserInfo(username: String): GitHubUser? {
+        if (userCache.containsKey(username)) {
+            println("Loaded from cache.")
+            return userCache[username]
+        }
+
+        // Basic API implementation (without error handling)
+        val userResponse = apiService.getUser(username).execute()
+        val userData = userResponse.body()!!
+
+        val reposResponse = apiService.getUserRepos(username).execute()
+        val reposData = reposResponse.body()!!
+
+        val gitHubUser = GitHubUser(
+            login = userData.login,
+            followers = userData.followers,
+            following = userData.following,
+            createdAt = userData.createdAt,
+            repos = reposData
+        )
+        userCache[username] = gitHubUser
+        return gitHubUser
+    }
+
+    fun getCachedUsers(): List<GitHubUser> = userCache.values.toList()
+}
