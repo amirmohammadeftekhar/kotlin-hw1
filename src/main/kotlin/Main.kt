@@ -2,6 +2,10 @@ import com.google.gson.annotations.SerializedName
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.Call
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import java.util.Scanner
+
 
 
 // API response for user data
@@ -62,6 +66,17 @@ class GitHubRepository(private val apiService: GitHubApiService) {
         return gitHubUser
     }
 
+    fun searchUserByUsername(query: String): List<GitHubUser> {
+        return userCache.values.filter { it.login.contains(query, ignoreCase = true) }
+    }
+
+    fun searchRepoByName(query: String): List<Pair<GitHubUser, Repository>> {
+        return userCache.values.flatMap { user ->
+            user.repos.filter { it.name.contains(query, ignoreCase = true) }
+                .map { repo -> user to repo }
+        }
+    }
+
     fun getCachedUsers(): List<GitHubUser> = userCache.values.toList()
 }
 
@@ -96,6 +111,18 @@ fun main() {
             "2" -> {
                 val users = repository.getCachedUsers()
                 users.forEach { println("- ${it.login}") }
+            }
+            "3" -> {
+                print("Enter search query: ")
+                val query = scanner.nextLine().trim()
+                repository.searchUserByUsername(query).forEach { println("- ${it.login}") }
+            }
+            "4" -> {
+                print("Enter repository name to search: ")
+                val query = scanner.nextLine().trim()
+                repository.searchRepoByName(query).forEach { (user, repo) ->
+                    println("User: ${user.login} -> Repo: ${repo.name}")
+                }
             }
             "5" -> break
         }
